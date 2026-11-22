@@ -896,7 +896,11 @@ describe('IPv6 开关', () => {
     assert.equal(ddnsOff.localIPv6, null, 'DDNS 不再探测 IPv6');
     await PUT_JSON('/api/system/settings', { ipv6_enabled: true });
     const lanOn = await j(await GET('/api/system/lan'));
-    assert.ok(lanOn.urls.some(u => u.family === 6), '重新开启后 IPv6 地址恢复显示');
+    // 仅当本机确实存在全局 IPv6 时才断言(CI Linux 构建机没有公网 IPv6)
+    const hasGlobalV6OnHost = Object.values(os.networkInterfaces()).some(addrs => (addrs || []).some(a => a.family === 'IPv6' && !a.internal && /^(2|3)/.test(a.address)));
+    if (hasGlobalV6OnHost) {
+      assert.ok(lanOn.urls.some(u => u.family === 6), '重新开启后 IPv6 地址恢复显示');
+    }
   });
 });
 
