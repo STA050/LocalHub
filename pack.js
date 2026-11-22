@@ -13,7 +13,7 @@ const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 // CI 中优先使用 git 标签名作为版本号(GITHUB_REF_NAME 由 Actions 注入)
 const tagVer = (process.env.GITHUB_REF_NAME || '').replace(/^v/, '');
 const ver = tagVer || pkg.version;
-const OUT = `LocalHub-v${ver}-便携版.zip`;
+const OUT = `LocalHub-v${ver}-portable.zip`;
 
 const FILES = [
   'Start-LocalHub.bat',
