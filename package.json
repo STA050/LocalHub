@@ -1,0 +1,20 @@
+{
+  "name": "localhub-transfer",
+  "version": "1.0.0",
+  "description": "LocalHub - 本地多设备文件快传、实时剪贴板同步与临时图床工作台",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test test/integration.test.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^5.3.0",
+    "qrcode": "^1.5.4",
+    "ws": "^8.23.0"
+  }
+}

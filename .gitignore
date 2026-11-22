@@ -1,0 +1,10 @@
+node_modules/
+data/
+server.log
+*.log
+LocalHub-v*.zip
+dist/
+_t_*.bat
+_trace*.bat
+_debug*
+_*.cjs

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F8FAFC">
+<title>LocalHub · 本地快传工作台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230EA5E9'/%3E%3Cpath d='M16 6v14m0 0l-5-5m5 5l5-5M8 24h16' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 访问口令遮罩 -->
+<div id="loginGate" class="login-gate hidden">
+  <div class="login-card">
+    <div class="login-logo">📡</div>
+    <h1>LocalHub</h1>
+    <p class="login-sub">本工作台已开启访问保护,请输入口令进入</p>
+    <input id="loginPassword" type="password" placeholder="访问口令" autocomplete="current-password">
+    <button id="loginBtn" class="btn btn-primary btn-block">进入工作台</button>
+    <p id="loginError" class="login-error hidden">口令不正确,请重试</p>
+  </div>
+</div>
+
+<!-- 布局外壳 -->
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>
+      </div>
+      <div class="brand-text"><b>LocalHub</b><span>本地快传工作台</span></div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="files"><span class="nav-ico">📄</span>文件快传</button>
+      <button class="nav-item" data-view="clips"><span class="nav-ico">📋</span>剪贴板</button>
+      <button class="nav-item" data-view="images"><span class="nav-ico">🖼️</span>图床</button>
+      <button class="nav-item" data-view="dashboard"><span class="nav-ico">📊</span>仪表盘</button>
+      <button class="nav-item" data-view="settings"><span class="nav-ico">⚙️</span>设置</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div id="onlineBadge" class="online-badge online"><span class="dot"></span><span id="onlineText">本机在线</span></div>
+      <button id="qrBtnSide" class="btn btn-soft btn-block">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M17.5 17.5h3.5v3.5h-3.5z"/></svg>
+        手机扫码连接
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand-inline">📡 <b>LocalHub</b></div>
+        <h2 id="viewTitle">文件快传</h2>
+      </div>
+      <div class="topbar-actions">
+        <div id="onlineBadgeTop" class="online-badge online"><span class="dot"></span><span id="onlineTextTop">1</span></div>
+        <button id="qrBtn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M17.5 17.5h3.5v3.5h-3.5z"/></svg>
+          <span>手机连接</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content" id="content">
+      <!-- 文件快传 -->
+      <section class="view" id="view-files">
+        <div id="dropOverlay" class="drop-overlay hidden"><div class="drop-hint">⬇️ 松手即上传到 LocalHub</div></div>
+        <div id="dropzone" class="dropzone">
+          <div class="dz-icon">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg>
+          </div>
+          <h3>拖拽文件到此处,或粘贴上传</h3>
+          <p class="muted">局域网直传 · 不限速 · 不压缩 · 保留原始文件名</p>
+          <div class="dz-actions">
+            <button id="pickFilesBtn" class="btn btn-primary">选择文件</button>
+            <button id="pickImagesBtn" class="btn btn-soft">选择图片</button>
+            <button id="cameraBtn" class="btn btn-soft only-mobile">📷 拍照上传</button>
+          </div>
+          <input type="file" id="fileInput" multiple class="hidden-input">
+          <input type="file" id="imageInput" accept="image/*" multiple class="hidden-input">
+          <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input">
+        </div>
+
+        <div id="transferPanel" class="transfer-panel hidden">
+          <div class="panel-head"><h4>传输中</h4><button id="clearTransfers" class="btn btn-ghost btn-sm">清空已完成</button></div>
+          <div id="transferList"></div>
+        </div>
+
+        <div class="list-head">
+          <h4>文件 <span id="filesCount" class="count-chip">0</span></h4>
+          <div class="list-tools">
+            <input id="fileSearch" class="search-input" type="search" placeholder="搜索文件名…">
+            <button id="zipSelectedBtn" class="btn btn-soft btn-sm" disabled>⬇ ZIP 打包下载</button>
+            <button id="delSelectedBtn" class="btn btn-danger-soft btn-sm" disabled>删除所选</button>
+          </div>
+        </div>
+        <div id="fileList" class="file-list"></div>
+        <div id="fileEmpty" class="empty hidden">还没有文件,拖一个进来试试吧</div>
+      </section>
+
+      <!-- 剪贴板 -->
+      <section class="view hidden" id="view-clips">
+        <div class="composer card">
+          <textarea id="clipInput" rows="3" placeholder="输入要同步的文本、链接或代码片段…(在页面任意位置 Ctrl+V 也能快速发送)"></textarea>
+          <div class="composer-foot">
+            <input id="clipTags" class="tag-input" placeholder="标签(逗号分隔,可选)">
+            <span id="clipDetect" class="detect-chip hidden"></span>
+            <div class="grow"></div>
+            <button id="clipPasteBtn" class="btn btn-ghost btn-sm">📋 读取系统剪贴板</button>
+            <button id="clipSendBtn" class="btn btn-primary">发送到所有设备</button>
+          </div>
+        </div>
+        <div class="list-head">
+          <div class="chips" id="clipFilters">
+            <button class="chip active" data-f="all">全部</button>
+            <button class="chip" data-f="pinned">置顶</button>
+            <button class="chip" data-f="favorite">收藏</button>
+            <button class="chip" data-f="code">代码</button>
+          </div>
+          <input id="clipSearch" class="search-input" type="search" placeholder="全文检索…">
+        </div>
+        <div id="clipList" class="clip-list"></div>
+        <div id="clipEmpty" class="empty hidden">暂无剪贴板内容,发一条试试</div>
+      </section>
+
+      <!-- 图床 -->
+      <section class="view hidden" id="view-images">
+        <div class="img-toolbar card">
+          <div class="img-toolbar-text">
+            <b>随手截图,粘贴即图床</b>
+            <p class="muted">在页面任意位置按 <kbd>Ctrl</kbd>+<kbd>V</kbd> 粘贴截图,自动生成局域网直链</p>
+          </div>
+          <div class="dz-actions">
+            <button id="imgPickBtn" class="btn btn-primary">上传图片</button>
+            <button id="imgPasteBtn" class="btn btn-soft">📋 粘贴剪贴板图片</button>
+            <button id="imgCameraBtn" class="btn btn-soft only-mobile">📷 拍照</button>
+          </div>
+          <input type="file" id="imgFileInput" accept="image/*" multiple class="hidden-input">
+          <input type="file" id="imgCameraInput" accept="image/*" capture="environment" class="hidden-input">
+        </div>
+        <div id="imageGrid" class="image-grid"></div>
+        <div id="imageEmpty" class="empty hidden">还没有图片,粘贴一张截图试试</div>
+      </section>
+
+      <!-- 仪表盘 -->
+      <section class="view hidden" id="view-dashboard">
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="card dash-card firewall-card">
+          <div class="panel-head">
+            <h4>🖥️ 电脑连通性自检 <span class="muted">(手机连不上?先看这里)</span></h4>
+            <button id="fwFixBtn" class="btn btn-primary btn-sm hidden">🔧 一键修复防火墙</button>
+          </div>
+          <div id="firewallCheck" class="dash-info">检测中…</div>
+        </div>
+        <div class="dash-cols">
+          <div class="card dash-card">
+            <div class="panel-head"><h4>自动清理</h4><button id="runCleanupBtn" class="btn btn-soft btn-sm">立即清理</button></div>
+            <div id="cleanupInfo" class="dash-info">加载中…</div>
+          </div>
+          <div class="card dash-card">
+            <div class="panel-head"><h4>分享链接管理</h4><span class="muted" id="shareCount"></span></div>
+            <div id="shareManageList" class="share-manage"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 设置 -->
+      <section class="view hidden" id="view-settings">
+        <div id="settingsWrap"></div>
+        <div class="settings-foot muted">带 <span class="restart-chip">重启生效</span> 标记的项修改后需重启服务;其余设置保存后立即生效,并实时同步到所有已连接设备。</div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 移动端底部导航 -->
+  <nav class="bottom-nav">
+    <button class="bn-item active" data-view="files"><span>📄</span>文件</button>
+    <button class="bn-item" data-view="clips"><span>📋</span>剪贴板</button>
+    <button class="bn-item" data-view="images"><span>🖼️</span>图床</button>
+    <button class="bn-item" data-view="dashboard"><span>📊</span>仪表</button>
+    <button class="bn-item" data-view="settings"><span>⚙️</span>设置</button>
+  </nav>
+</div>
+
+<!-- 扫码连接弹窗 -->
+<div id="qrModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head"><h3>手机扫码连接</h3><button class="modal-close" data-close="qrModal">✕</button></div>
+    <p class="muted">用手机微信或浏览器扫码,直接打开本工作台</p>
+    <div id="qrBox" class="qr-box">生成中…</div>
+    <div class="qr-urls" id="qrUrls"></div>
+    <div class="dz-actions center">
+      <button id="qrCopyBtn" class="btn btn-soft">复制链接</button>
+      <select id="qrIpSelect" class="select" style="max-width:220px"></select>
+    </div>
+  </div>
+</div>
+
+<!-- 分享弹窗 -->
+<div id="shareModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head"><h3>生成分享链接</h3><button class="modal-close" data-close="shareModal">✕</button></div>
+    <p class="muted" id="shareTargetName">—</p>
+    <label class="field-label">有效期</label>
+    <select id="shareExpiry" class="select">
+      <option value="1h">1 小时</option>
+      <option value="24h" selected>24 小时</option>
+      <option value="7d">7 天</option>
+      <option value="burn">阅后即焚(访问一次后失效)</option>
+      <option value="forever">永久保留</option>
+    </select>
+    <label class="field-label">提取码</label>
+    <div class="code-row">
+      <label class="switch"><input type="checkbox" id="shareCodeOn" checked><span class="track"></span></label>
+      <input id="shareCode" class="code-input" value="" maxlength="4" inputmode="numeric" pattern="\d{4}">
+      <button id="shareCodeGen" class="btn btn-ghost btn-sm">随机</button>
+    </div>
+    <div id="shareResult" class="share-result hidden">
+      <label class="field-label">分享链接(局域网内可访问)</label>
+      <div class="link-row"><input id="shareUrl" readonly class="link-input"><button id="shareCopyBtn" class="btn btn-primary btn-sm">复制</button></div>
+      <a id="shareOpenBtn" class="btn btn-soft btn-sm" target="_blank">打开分享页 ↗</a>
+    </div>
+    <div class="dz-actions center" style="margin-top:14px">
+      <button id="shareCreateBtn" class="btn btn-primary">生成链接</button>
+    </div>
+  </div>
+</div>
+
+<!-- 在线设备弹窗 -->
+<div id="devModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head"><h3>在线设备 <span class="count-chip" id="devCount">0</span></h3><button class="modal-close" data-close="devModal">✕</button></div>
+    <p class="muted">以下设备正通过 WebSocket 实时连接到本服务(同一浏览器的多个标签页计为一台)</p>
+    <div id="devList" class="dev-list">加载中…</div>
+    <p class="muted" style="margin-top:10px;font-size:12px">设备名称由浏览器标识自动识别;关闭对应标签页或浏览器后,设备会自动从列表消失。</p>
+  </div>
+</div>
+
+<div id="remoteUploads" class="remote-uploads hidden">
+  <div class="ru-head">📡 其他设备正在上传</div>
+  <div id="remoteUploadList"></div>
+</div>
+
+<div id="toasts" class="toasts"></div>
+
+<script src="js/highlighter.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
