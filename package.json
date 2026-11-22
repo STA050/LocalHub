@@ -1,6 +1,6 @@
 {
   "name": "localhub-transfer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "LocalHub - 本地多设备文件快传、实时剪贴板同步与临时图床工作台",
   "main": "server/index.js",
   "scripts": {
